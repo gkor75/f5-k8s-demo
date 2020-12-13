@@ -13,14 +13,15 @@
                 "class": "Application",
                 "template": "generic",
                 "frontend": {
-                    "class": "Service_TCP",
+                    "class": "Service_HTTP",
                     "virtualAddresses": [
                         "10.1.10.101"
                     ],
                     "remark": "frontend: f5demo.tcp.v1",
                     "persistenceMethods": [],
                     "virtualPort": 80,
-                    "pool": "frontend2_pool"
+                    "pool": "frontend2_pool",
+                    "profileHTTPCompression": { "use": "compression_front" }
                 },
                 "frontend2_pool": {
                     "class": "Pool",
@@ -34,6 +35,13 @@
                             "shareNodes": true
                         }
                     ]
+                },
+                "compression_front": {
+                    "class": "HTTP_Compress",
+                    "minimumSize": 2048,
+                    "cpuSaver": true,
+                    "cpuSaverLow": 60,
+                    "cpuSaverHigh": 70
                 }
             }
         }

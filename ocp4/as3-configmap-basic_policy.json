@@ -1,0 +1,79 @@
+{
+    "$schema": "https://raw.githubusercontent.com/F5Networks/f5-appsvcs-extension/master/schema/latest/as3-schema.json",
+    "class": "AS3",
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.23.0",
+        "id": "f5demo",
+        "label": "CIS AS3 Example",
+        "remark": "Example of using CIS ConfigMap",
+        "ConfigMap": {
+            "class": "Tenant",
+            "MyApps": {
+                "class": "Application",
+                "template": "generic",
+                "frontend": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.1.10.101"
+                    ],
+                    "remark": "frontend: f5demo.tcp.v1",
+                    "persistenceMethods": [],
+                    "virtualPort": 80,
+                    "pool": "frontend2_pool",
+                    "profileHTTPCompression": { "use": "compression_front" },
+                    "policyEndpoint": { "use": "my_policy"}
+                },
+                "frontend2_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": [],
+                            "shareNodes": true
+                        }
+                    ]
+                },
+                "blue": {
+                    "class": "Pool",
+                    "remark": "Added for policy demo",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": [],
+                            "shareNodes": true
+                        }
+                    ]
+                },
+                "my_policy": {
+                    "class": "Endpoint_Policy",
+                    "remark": "route Viprion Image",
+                    "rules": [
+                        {
+                            "name": "vippict",
+                            "conditions": [
+                                { "type":"httpUri",  "event": "request", "path": { "operand": "equals", "values": ["/viprion.ssvg"] }}
+                            ],
+                            "actions": [
+                                { "type":"forward", "event": "request", "select": { "pool": { "use": "blue" } } }
+                            ]
+                        }
+                    ]
+                },
+                "compression_front": {
+                    "class": "HTTP_Compress",
+                    "minimumSize": 2048,
+                    "cpuSaver": true,
+                    "cpuSaverLow": 60,
+                    "cpuSaverHigh": 70
+                }
+            }
+        }
+    }
+}
